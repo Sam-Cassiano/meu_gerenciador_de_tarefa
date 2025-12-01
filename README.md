@@ -102,6 +102,7 @@ Após o push na branch `main`, o workflow do GitHub Actions:
 
 ```
 http://138.197.195.201:5000/tasks
+http://138.197.195.201:5000/docs#/
 ```
 
 ---
