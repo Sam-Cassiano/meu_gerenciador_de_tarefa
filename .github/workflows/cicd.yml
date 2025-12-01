@@ -39,15 +39,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 6️⃣ Build da imagem Docker
+      # 6️⃣ Build da imagem Docker usando o SHA do commit como tag
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USER }}/tasks-api:latest .
+          docker build -t ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA} .
 
       # 7️⃣ Push para Docker Hub
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USER }}/tasks-api:latest
+          docker push ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA}
 
       # 8️⃣ Deploy no servidor via SSH
       - name: Deploy to server
@@ -62,7 +62,7 @@ jobs:
             mkdir -p ~/meu_gerenciador_de_tarefas
             cd ~/meu_gerenciador_de_tarefas
 
-            # Atualiza a imagem do Docker
+            # Atualiza a imagem do Docker usando a tag SHA do commit
             docker-compose -f docker-compose.prod.yml pull
 
             # Sobe os containers
