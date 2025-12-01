@@ -1,184 +1,119 @@
-# 🐳 Gerenciador de Tarefas — API com Docker e FastAPI
+# Meu Gerenciador de Tarefas
 
-## 📘 Introdução
+## Descrição
 
-Este projeto tem como objetivo consolidar conhecimentos em **Dockerfile**, **Docker Compose**, **redes** e **volumes**.  
-Foi desenvolvida uma **API de Gerenciamento de Tarefas (CRUD)** com **persistência de dados** em banco de dados relacional e **configuração segura via variáveis de ambiente**.
-
----
-
-## 🚀 Funcionalidades
-
-- Criar, listar, atualizar e excluir tarefas (CRUD completo)
-- Persistência de dados em banco de dados relacional
-- Comunicação entre containers (app + banco)
-- Variáveis de ambiente configuráveis
-- Volume para persistência do banco de dados
-- Usuário dedicado no banco (sem uso do root)
-- Totalmente containerizado via **Docker Compose**
+Aplicação de gerenciamento de tarefas construída com FastAPI, PostgreSQL e Docker. Este projeto possui pipeline de CI/CD configurado com GitHub Actions, que garante testes automáticos, build de imagens Docker e deploy automático no servidor de produção.
 
 ---
 
+## Funcionalidades
 
+* Criar, ler, atualizar e deletar tarefas (CRUD).
+* Deploy automático via GitHub Actions no servidor remoto.
+* Multi-container: API + banco de dados PostgreSQL.
 
 ---
 
-## ⚙️ Configuração do Ambiente
+## Configuração do Servidor
 
-### 🔐 Arquivo `.env`
+Antes do deploy automático, é necessário configurar o servidor:
 
-Crie um arquivo chamado `.env` na raiz do projeto com o conteúdo:
+1. Conectar via SSH ao servidor:
+
+```bash
+ssh root@138.197.195.201
+```
+
+2. Criar o diretório do projeto:
+
+```bash
+mkdir -p ~/meu_gerenciador_de_tarefas
+cd ~/meu_gerenciador_de_tarefas
+```
+
+3. Criar o arquivo `.env` com as variáveis de produção:
 
 ```env
-# Configurações do Banco de Dados
-DB_USER=app_user
-DB_PASSWORD=securepassword
-DB_NAME=tasks_db
-DB_HOST=db
-DB_PORT=5432
-
-# Configurações da Aplicação
-APP_PORT=5000
+DOCKERHUB_USER=sammmghj
+IMAGE_TAG=latest
+POSTGRES_PASSWORD=senha123
 ```
 
----
+4. Certifique-se que Docker e Docker Compose estão instalados:
 
-## 🐋 Execução do Projeto
-
-### 1️⃣ Construir e iniciar os containers
 ```bash
-docker compose up -d --build
+docker --version
+docker-compose --version
 ```
 
-### 2️⃣ Verificar se estão rodando
+---
+
+## GitHub Actions (CI/CD)
+
+O workflow `cicd.yml` automatiza o deploy e testes:
+
+* **Disparador:** push na branch `main`.
+* **Etapas:**
+
+  1. Checkout do repositório.
+  2. Configuração do Python.
+  3. Instalação de dependências.
+  4. Execução de testes unitários (`pytest`).
+  5. Login no Docker Hub.
+  6. Build da imagem Docker.
+  7. Push da imagem para Docker Hub.
+  8. Deploy no servidor via SSH, atualizando os containers.
+
+---
+
+## Secrets necessários no GitHub
+
+Para o deploy funcionar corretamente, configure os seguintes Secrets no repositório:
+
+| Nome do Secret    | Descrição                           |
+| ----------------- | ----------------------------------- |
+| `DOCKERHUB_USER`  | Usuário do Docker Hub               |
+| `DOCKERHUB_TOKEN` | Token/senha do Docker Hub           |
+| `SSH_HOST`        | IP ou hostname do servidor remoto   |
+| `SSH_USER`        | Usuário para conexão SSH            |
+| `SSH_KEY`         | Chave privada SSH para autenticação |
+
+---
+
+## Testes
+
+Os testes unitários cobrem todas as rotas do CRUD:
+
 ```bash
-docker ps
-```
-
-Você deverá ver algo como:
-```
-meu_projetopython-app-1
-meu_projetopython-db-1
+pytest
 ```
 
 ---
 
-## 🧠 Endpoints da API
+## Deploy
 
-A API ficará disponível em:  
-👉 `http://localhost:5000`
+Após o push na branch `main`, o workflow do GitHub Actions:
 
-| Método | Endpoint | Descrição |
-|---------|-----------|-----------|
-| `POST` | `/tasks/` | Cria uma nova tarefa |
-| `GET` | `/tasks/` | Lista todas as tarefas |
-| `GET` | `/tasks/{id}` | Obtém uma tarefa pelo ID |
-| `PUT` | `/tasks/{id}` | Atualiza uma tarefa existente |
-| `DELETE` | `/tasks/{id}` | Exclui uma tarefa |
+* Constrói a imagem Docker da aplicação.
+* Envia a imagem para o Docker Hub.
+* Atualiza automaticamente os containers no servidor de produção.
 
----
+**URL da aplicação:**
 
-## 🧪 Testando com Insomnia
-
-1. Abra o **Insomnia**  
-2. Crie uma nova **collection** chamada “Gerenciador de Tarefas”
-3. Adicione os seguintes requests:
-
-### ➕ Criar tarefa
-`POST http://localhost:5000/tasks/`
-```json
-{
-  "title": "Estudar Docker",
-  "description": "Finalizar desafio de containers"
-}
 ```
-
-### 📋 Listar tarefas
-`GET http://localhost:5000/tasks/`
-
-### ✏️ Atualizar tarefa
-`PUT http://localhost:5000/tasks/1`
-```json
-{
-  "title": "Estudar Docker e FastAPI",
-  "description": "Finalizar o desafio prático",
-  "completed": true
-}
-```
-
-### ❌ Deletar tarefa
-`DELETE http://localhost:5000/tasks/1`
-
----
-
-## 💾 Persistência de Dados (Volumes)
-
-O volume configurado no `docker-compose.yml` garante que os dados sejam mantidos mesmo após reiniciar os containers:
-
-```yaml
-volumes:
-  db_data:
-```
-
-- Local do volume dentro do container: `/var/lib/postgresql/data`
-- Dados permanecem mesmo após `docker compose down`
-
----
-
-## 🌐 Rede Customizada
-
-A comunicação entre os containers é feita por uma rede interna do Docker definida no `docker-compose.yml`:
-
-```yaml
-networks:
-  app_network:
-    driver: bridge
+http://138.197.195.201:5000/tasks
 ```
 
 ---
 
-## 🔒 Segurança
+## Badge de Status
 
-- O banco **não utiliza o usuário root**.  
-- Um usuário `app_user` com senha segura foi criado no `.env`.
-- Nenhum dado sensível está hardcoded no código-fonte.
-- As variáveis de ambiente são injetadas no container pelo `docker-compose.yml`.
+Status do pipeline:
+![CI/CD](https://github.com/Sam-Cassiano/meu_gerenciador_de_tarefa/actions/workflows/cicd.yml/badge.svg)
 
 ---
 
-## 📜 Comandos Úteis
+## Observações
 
-| Comando | Descrição |
-|----------|------------|
-| `docker compose up -d --build` | Inicia e constrói os containers |
-| `docker compose down` | Para e remove os containers |
-| `docker logs meu_projetopython-app-1` | Exibe logs da aplicação |
-| `docker exec -it meu_projetopython-db-1 psql -U app_user -d tasks_db` | Acessa o banco de dados via terminal |
-| `docker volume ls` | Lista os volumes ativos |
-| `docker network ls` | Lista as redes configuradas |
-
----
-
-## 🧾 Resultados Esperados — Validados ✅
-
-| Requisito | Status |
-|------------|---------|
-| Multi-container funcional | ✅ |
-| CRUD com persistência | ✅ |
-| Volume configurado | ✅ |
-| Variáveis de ambiente seguras | ✅ |
-| Usuário sem root | ✅ |
-| Documentação completa | ✅ |
-
----
-
-## 👨‍💻 Tecnologias Utilizadas
-
-- **Python 3.12**
-- **FastAPI**
-- **SQLAlchemy**
-- **PostgreSQL**
-- **Docker & Docker Compose**
-- **Uvicorn**
-
-
+* O arquivo `.env` **não deve ser versionado**.
+* Sempre use SHA do commit como tag da imagem Docker em produção para versionamento seguro.
