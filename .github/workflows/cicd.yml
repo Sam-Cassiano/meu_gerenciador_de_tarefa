@@ -27,7 +27,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: pytest
+        run: |
+          pytest
 
       # 4️⃣ Login no Docker Hub
       - name: Login to Docker Hub
@@ -38,11 +39,13 @@ jobs:
 
       # 5️⃣ Build da imagem Docker
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA} .
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA} .
 
       # 6️⃣ Push para Docker Hub
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA}
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USER }}/tasks-api:${GITHUB_SHA}
 
       # 7️⃣ Deploy no servidor via SSH
       - name: Deploy to server
@@ -56,4 +59,3 @@ jobs:
             cd ~/meu_gerenciador_de_tarefas
             docker-compose -f docker-compose.prod.yml pull
             docker-compose -f docker-compose.prod.yml up -d --remove-orphans
-
