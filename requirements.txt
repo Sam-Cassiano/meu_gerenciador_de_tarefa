@@ -5,3 +5,9 @@ psycopg2-binary
 python-dotenv
 pytest
 pytest-cov
+fastapi==0.112.0
+uvicorn==0.23.2
+sqlalchemy==2.0.20
+psycopg2-binary==2.9.7
+pytest==9.0.1
+httpx==0.26.2
